@@ -166,9 +166,19 @@ const MainScreen = () => {
         e => e.nome_cientifico === especie.nome_cientifico
       );
       
-      const newSelected = isSelected
-        ? prev.selectedEspecies.filter(e => e.nome_cientifico !== especie.nome_cientifico)
-        : [...prev.selectedEspecies, especie];
+      let newSelected;
+      if (isSelected) {
+        // Remove todas as ocorrências desta espécie
+        newSelected = prev.selectedEspecies.filter(
+          e => e.nome_cientifico !== especie.nome_cientifico
+        );
+      } else {
+        // Adiciona TODOS os itens desta espécie (do array items)
+        newSelected = [
+          ...prev.selectedEspecies,
+          ...especie.items // Isso adicionará todos os pontos geográficos
+        ];
+      }
       
       console.log(`[DEBUG] Itens selecionados: ${newSelected.length}`);
       return {
@@ -197,7 +207,7 @@ const MainScreen = () => {
         />
       </View>
       
-      <MapSection especies={state.displayedEspecies} />
+      <MapSection especies={state.selectedEspecies} />
       
       <SpeciesList
         especies={state.displayedEspecies}
