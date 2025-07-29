@@ -8,6 +8,7 @@ const RoomList = ({ rooms, selectedRoom, onSelectRoom, onCreateRoom, loading }) 
         title="Create Room" 
         onPress={onCreateRoom} 
         color="#3498db"
+        disabled={loading}
       />
       
       {loading && rooms.length === 0 ? (

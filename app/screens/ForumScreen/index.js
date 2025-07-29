@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import { View, StyleSheet, Text, Button } from 'react-native';
 import { fetchRooms, fetchMessages, sendMessage, createRoom } from '../../services/api';
 import RoomList from './components/RoomList';
 import MessageList from './components/MessageList';
 import MessageInput from './components/MessageInput';
 import CreateRoomModal from './components/CreateRoomModal';
 
-const ForumScreen = () => {
+const ForumScreen = ({ route }) => {
   const [rooms, setRooms] = useState([]);
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [messages, setMessages] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const isLoggedIn = route.params?.username ? true : false;
 
   useEffect(() => {
     loadRooms();
@@ -67,7 +69,6 @@ const handleSendMessage = async (messageData) => {
     // Refresh messages from server
     loadMessages(selectedRoom.id);
   } catch (error) {
-    console.error('Failed to send message:', error);
     // Rollback
     setMessages(prev => prev.filter(msg => msg.id !== messageData.id));
   }
@@ -75,8 +76,6 @@ const handleSendMessage = async (messageData) => {
 
   const handleCreateRoom = async (roomData) => {
     try {
-      console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-      console.log(roomData)
       const newRoom = await createRoom(roomData);
       setRooms(prev => [...prev, newRoom]);
       setSelectedRoom(newRoom);
@@ -104,6 +103,13 @@ const handleSendMessage = async (messageData) => {
       ) : (
         <View style={styles.placeholder}>
           <Text>Select a room or create a new one</Text>
+          {!isLoggedIn && (
+            <Button
+              title="Login to create rooms"
+              onPress={() => navigation.navigate('Login')}
+              color="#3498db"
+            />
+          )}
         </View>
       )}
       

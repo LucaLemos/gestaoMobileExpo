@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 let MapView, Marker;
 
 if (Platform.OS === 'web') {
-  MapView = ({ style, children, initialRegion }) => {
+  MapView = ({ style, children, initialRegion, onPress }) => {
     const mapRef = useRef(null);
     const [map, setMap] = useState(null);
     const [markers, setMarkers] = useState([]);
@@ -29,6 +29,13 @@ if (Platform.OS === 'web') {
           center,
           zoom: 12
         });
+        
+        map.addListener('click', (e) => {
+          if (typeof onPress === 'function') {
+            onPress(e); // e.latLng contém as coordenadas
+          }
+        });
+
         setMap(map);
       }
 

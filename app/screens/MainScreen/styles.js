@@ -104,4 +104,40 @@ export default StyleSheet.create({
     color: '#555',
     fontWeight: 'bold',
   },
+  speciesCard: {
+  backgroundColor: '#fff',
+  padding: 15,
+  borderRadius: 8,
+  marginHorizontal: 10,
+  marginBottom: 10,
+  elevation: 2,
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center'
+},
+detailsSection: {
+  flex: 1,
+  paddingRight: 10,
+},
+checkboxSection: {
+  marginLeft: 10,
+},
+cardContent: {
+  flex: 1,
+},
+detailsSection: {
+  flex: 1,
+  paddingRight: 10,
+  flexDirection: 'row',
+  alignItems: 'center',
+},
+checkboxSection: {
+  marginLeft: 10,
+},
+infoIcon: {
+  marginLeft: 10,
+},
+cardContent: {
+  flex: 1,
+},
 });

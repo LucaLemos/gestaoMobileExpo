@@ -20,30 +20,15 @@ const MainScreen = () => {
     }
   });
 
-  // Debug: Monitorar mudanças no state
-  useEffect(() => {
-    console.log('State atualizado:', {
-      searchText: state.searchText,
-      totalItems: state.pagination.totalItems,
-      currentPage: state.pagination.currentPage,
-      loading: state.loading,
-      selectedCount: state.selectedEspecies.length
-    });
-  }, [state]);
-
   useEffect(() => {
     const loadData = async () => {
       try {
-        console.log('[DEBUG] Iniciando carregamento de dados...');
-        const especies = await fetchEspecies();
-        console.log('[DEBUG] Dados brutos recebidos - Quantidade:', especies.length);
-        
-        const grouped = groupEspecies(especies);
-        console.log('[DEBUG] Dados agrupados - Grupos únicos:', grouped.length);
+        const plantas = await fetchEspecies();
+        const grouped = groupEspecies(plantas);
         
         setState(prev => ({
           ...prev,
-          rawEspecies: especies,
+          rawEspecies: plantas,
           groupedEspecies: grouped,
           pagination: {
             ...prev.pagination,
@@ -62,11 +47,10 @@ const MainScreen = () => {
     loadData();
   }, []);
 
-  const groupEspecies = (especies) => {
-    console.log('[DEBUG] Agrupando espécies...');
+  const groupEspecies = (plantas) => {
     const groups = {};
     
-    especies.forEach((item, index) => {
+    plantas.forEach((item) => {
       const scientificName = item.nome_cientifico || 'Desconhecido';
       const popularName = item.nome_popular || 'Desconhecido';
       
@@ -83,16 +67,6 @@ const MainScreen = () => {
       
       groups[scientificName].count++;
       groups[scientificName].items.push(item);
-
-      // Debug: Mostrar primeiros 3 itens
-      if (index < 3) {
-        console.log(`[DEBUG] Item ${index + 1}:`, {
-          nome_popular: popularName,
-          nome_cientifico: scientificName,
-          latitude: item.latitude,
-          longitude: item.longitude
-        });
-      }
     });
     
     return Object.values(groups);
@@ -103,10 +77,8 @@ const MainScreen = () => {
     const endIndex = startIndex + state.pagination.itemsPerPage;
     
     const filtered = filterEspecies(especies);
-    console.log(`[DEBUG] Filtro aplicado - Resultados: ${filtered.length}`);
     
     const paginated = filtered.slice(startIndex, endIndex);
-    console.log(`[DEBUG] Paginação - Página ${page}:`, paginated.length, 'itens');
     
     setState(prev => ({
       ...prev,
@@ -121,12 +93,10 @@ const MainScreen = () => {
 
   const filterEspecies = (especies) => {
     if (!state.searchText.trim()) {
-      console.log('[DEBUG] Sem texto de busca - retornando todas espécies');
       return especies;
     }
     
     const searchLower = state.searchText.toLowerCase().trim();
-    console.log(`[DEBUG] Buscando por: "${searchLower}"`);
 
     return especies.filter(item => {
       const nomePopular = item.nome_popular?.toLowerCase() || '';
@@ -134,20 +104,11 @@ const MainScreen = () => {
       
       const match = nomePopular.includes(searchLower) || nomeCientifico.includes(searchLower);
       
-      if (match) {
-        console.log('[DEBUG] Match encontrado:', {
-          nome_popular: item.nome_popular,
-          nome_cientifico: item.nome_cientifico,
-          termo_buscado: searchLower
-        });
-      }
-      
       return match;
     });
   };
 
   const handleSearchChange = (text) => {
-    console.log('[DEBUG] Input de busca alterado:', text);
     setState(prev => {
       const filtered = filterEspecies(prev.groupedEspecies);
       updateDisplayedEspecies(filtered, 1);
@@ -156,11 +117,6 @@ const MainScreen = () => {
   };
 
   const handleSelectEspecie = (especie) => {
-    console.log('[DEBUG] Selecionando espécie:', {
-      nome: especie.nome_popular,
-      cientifico: especie.nome_cientifico
-    });
-    
     setState(prev => {
       const isSelected = prev.selectedEspecies.some(
         e => e.nome_cientifico === especie.nome_cientifico
@@ -180,7 +136,6 @@ const MainScreen = () => {
         ];
       }
       
-      console.log(`[DEBUG] Itens selecionados: ${newSelected.length}`);
       return {
         ...prev,
         selectedEspecies: newSelected
@@ -189,7 +144,6 @@ const MainScreen = () => {
   };
 
   const changePage = (newPage) => {
-    console.log('[DEBUG] Mudando para página:', newPage);
     updateDisplayedEspecies(state.groupedEspecies, newPage);
   };
 
@@ -197,6 +151,9 @@ const MainScreen = () => {
 
   return (
     <View style={styles.container}>
+      
+      <MapSection especies={state.selectedEspecies} />
+      
       <View style={styles.searchContainer}>
         <TextInput
           value={state.searchText}
@@ -206,9 +163,7 @@ const MainScreen = () => {
           testID="search-input"
         />
       </View>
-      
-      <MapSection especies={state.selectedEspecies} />
-      
+
       <SpeciesList
         especies={state.displayedEspecies}
         selectedEspecies={state.selectedEspecies}

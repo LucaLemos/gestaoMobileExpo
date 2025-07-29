@@ -1,63 +1,66 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FlatList, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { Checkbox } from 'react-native-paper';
+import { Ionicons } from '@expo/vector-icons';
 import styles from '../styles';
+import PlantDetailsModal from './PlantDetailsModal';
 
 const SpeciesList = ({ especies, selectedEspecies, onSelectEspecie, loading, searchText }) => {
-  console.log('[DEBUG] SpeciesList - props:', {
-    especiesCount: especies.length,
-    searchText,
-    selectedCount: selectedEspecies.length
-  });
+  const [selectedPlant, setSelectedPlant] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const handleShowDetails = (plant) => {
+    setSelectedPlant({
+      ...plant.items[0], // Mantém os dados principais
+      items: plant.items // Passa todas as ocorrências
+    });
+    setModalVisible(true);
+  };
 
   const renderItem = ({ item, index }) => {
-    console.log(`[DEBUG] Renderizando item ${index + 1}:`, {
-      nome_popular: item.nome_popular,
-      nome_cientifico: item.nome_cientifico,
-      count: item.count
-    });
-
     const isSelected = selectedEspecies.some(
       e => e.nome_cientifico === item.nome_cientifico
     );
 
     return (
-      <TouchableOpacity
-        style={[
-          styles.speciesCard,
-          isSelected && styles.selectedCard
-        ]}
-        onPress={() => {
-          console.log('[DEBUG] Item pressionado:', item.nome_popular);
-          onSelectEspecie(item);
-        }}
-        activeOpacity={0.7}
-        testID={`species-item-${index}`}
-      >
-        <View style={styles.cardContent}>
-          <Text style={styles.speciesName} testID="species-popular-name">
-            {item.nome_popular}
-          </Text>
-          <Text style={styles.scientificName} testID="species-scientific-name">
-            {item.nome_cientifico}
-          </Text>
-          <Text style={styles.detailText} testID="species-count">
-            Ocorrências: {item.count}
-          </Text>
-        </View>
+      <View style={[styles.speciesCard, isSelected && styles.selectedCard]}>
+        {/* Parte clicável para detalhes */}
+        <TouchableOpacity
+          style={styles.detailsSection}
+          onPress={() => handleShowDetails(item)}
+          activeOpacity={0.7}
+          testID={`species-details-${index}`}
+        >
+          <View style={styles.cardContent}>
+            <Text style={styles.speciesName}>
+              {item.nome_popular || 'Sem nome popular'}
+            </Text>
+            <Text style={styles.scientificName}>
+              {item.nome_cientifico}
+            </Text>
+            <Text style={styles.detailText}>
+              Ocorrências: {item.count}
+            </Text>
+          </View>
+          <View style={styles.infoIcon}>
+            <Ionicons name="information-circle-outline" size={20} color="#3498db" />
+          </View>
+        </TouchableOpacity>
         
-        <Checkbox
-          status={isSelected ? 'checked' : 'unchecked'}
-          onPress={() => onSelectEspecie(item)}
-          color="#3498db"
-          testID="species-checkbox"
-        />
-      </TouchableOpacity>
+        {/* Seção do checkbox */}
+        <View style={styles.checkboxSection}>
+          <Checkbox
+            status={isSelected ? 'checked' : 'unchecked'}
+            onPress={() => onSelectEspecie(item)}
+            color="#3498db"
+            testID={`species-checkbox-${index}`}
+          />
+        </View>
+      </View>
     );
   };
 
   if (loading && especies.length === 0) {
-    console.log('[DEBUG] Mostrando indicador de carregamento');
     return (
       <View style={styles.loadingContainer} testID="loading-indicator">
         <ActivityIndicator size="large" color="#3498db" />
@@ -65,13 +68,8 @@ const SpeciesList = ({ especies, selectedEspecies, onSelectEspecie, loading, sea
     );
   }
 
-  console.log('[DEBUG] Renderizando lista de espécies');
   return (
     <View style={styles.listContainer} testID="species-list">
-      <Text style={styles.resultsText} testID="results-info">
-        Mostrando {especies.length} de {selectedEspecies.length} selecionadas
-      </Text>
-      
       <FlatList
         data={especies}
         renderItem={renderItem}
@@ -83,6 +81,13 @@ const SpeciesList = ({ especies, selectedEspecies, onSelectEspecie, loading, sea
           </Text>
         }
         testID="species-flatlist"
+      />
+
+      {/* Modal de detalhes */}
+      <PlantDetailsModal
+        visible={modalVisible}
+        plant={selectedPlant}
+        onClose={() => setModalVisible(false)}
       />
     </View>
   );

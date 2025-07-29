@@ -1,5 +1,5 @@
-//const API_URL = 'http://localhost:3000';
-const API_URL = 'https://gestaoinformacaobackend.onrender.com';
+const API_URL = 'http://localhost:3000';
+//const API_URL = 'https://gestaoinformacaobackend.onrender.com';
 
 const handleResponse = async (response) => {
   if (!response.ok) {
@@ -9,20 +9,56 @@ const handleResponse = async (response) => {
   return response.json();
 };
 
-export const fetchEspecies = async (search, familia, rpa, limit = null) => {
+export const fetchEspecies = async (search) => {
   try {
     const params = new URLSearchParams();
     if (search) params.append('search', search);
-    if (familia) params.append('familia', familia);
-    if (rpa) params.append('rpa', rpa);
-    if (limit) params.append('limit', limit);  // Add limit parameter
     
-    const response = await fetch(`${API_URL}/api/especies?${params.toString()}`);
+    const response = await fetch(`${API_URL}/api/plantas?${params.toString()}`);
     if (!response.ok) throw new Error('Network response was not ok');
     return await response.json();
   } catch (error) {
-    console.error('Error fetching especies:', error);
+    console.error('Error fetching plantas:', error);
     return [];
+  }
+};
+
+export const getPlantComments = async (plantId) => {
+  try {
+    const response = await fetch(`${API_URL}/api/plants/${plantId}/comments`);
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching comments:', error);
+    return [];
+  }
+};
+
+export const addPlantComment = async ({ plantId, userId, text }) => {
+  try {
+    const response = await fetch(`${API_URL}/api/plants/${plantId}/comments`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId,
+        text
+      })
+    });
+    
+    const responseData = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(responseData.error || responseData.message || 'Failed to add comment');
+    }
+    
+    return responseData;
+  } catch (error) {
+    console.error('Error adding comment:', {
+      error: error.message,
+      stack: error.stack
+    });
+    throw error;
   }
 };
 
@@ -76,8 +112,6 @@ export const fetchMessages = async (roomId) => {
 };
 
 export const sendMessage = async (roomId, message) => {
-  console.log(message)
-  console.log(roomId)
   try {
     const response = await fetch(`${API_URL}/api/rooms/${roomId}/messages`, {
       method: 'POST',
@@ -88,6 +122,91 @@ export const sendMessage = async (roomId, message) => {
   } catch (error) {
     console.error('Error sending message:', error);
     throw error;
+  }
+};
+
+export const registerUser = async (userData) => {
+  console.log(userData)
+  try {
+    const response = await fetch(`${API_URL}/api/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(userData)
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      return { success: false, message: errorData.message || 'Registration failed' };
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Registration error:', error);
+    return { success: false, message: 'Network error' };
+  }
+};
+
+export const loginUser = async (credentials) => {
+  console.log("manda")
+  try {
+    const response = await fetch(`${API_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials)
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      return { success: false, message: errorData.message || 'Login failed' };
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Login error:', error);
+    return { success: false, message: 'Network error' };
+  }
+};
+
+export const addPlant = async (plantData) => {
+  try {
+    const response = await fetch(`${API_URL}/api/plants`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        nome_cientifico: plantData.nome_cientifico || null,
+        nome_popular: plantData.nome_popular || null,
+        detalhes: plantData.detalhes || null,
+        data_plantio: plantData.data_plantio || null,
+        fonte: plantData.fonte || null,
+        usuario_id: plantData.usuario_id || null,
+        latitude: plantData.latitude,
+        longitude: plantData.longitude
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      return { 
+        success: false, 
+        message: errorData.message || 'Falha ao cadastrar planta' 
+      };
+    }
+
+    const data = await response.json();
+    return { 
+      success: true,
+      plant: data.plant,
+      message: 'Planta cadastrada com sucesso!'
+    };
+
+  } catch (error) {
+    console.error('Error adding plant:', error);
+    return { 
+      success: false, 
+      message: 'Erro de conexão com o servidor' 
+    };
   }
 };
 
