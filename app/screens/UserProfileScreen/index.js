@@ -2,9 +2,15 @@ import React from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
 
 const UserProfileScreen = ({ isLoggedIn, username, navigation }) => {
-  const handleLogout = () => {
-    // Lógica adicional de logout pode ser adicionada aqui
-    navigation.navigate('MainTabs', { username: null });
+  const handleLogout = async () => {
+    try {
+      navigation.navigate('MainTabs', {
+        username: null,
+        screen: 'User'
+      });
+    } catch (error) {
+      console.error('Erro durante logout:', error);
+    }
   };
 
   return (

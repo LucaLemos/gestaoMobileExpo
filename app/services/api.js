@@ -72,11 +72,6 @@ export const fetchFilters = async () => {
   }
 };
 
-const api = {
-  fetchEspecies,
-  fetchFilters
-};
-
 export const fetchRooms = async () => {
   try {
     const response = await fetch(`${API_URL}/api/rooms`);
@@ -208,6 +203,11 @@ export const addPlant = async (plantData) => {
       message: 'Erro de conexão com o servidor' 
     };
   }
+};
+
+const api = {
+  fetchEspecies,
+  fetchFilters
 };
 
 export default api;

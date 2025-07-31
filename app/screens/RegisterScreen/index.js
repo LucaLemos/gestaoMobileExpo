@@ -9,6 +9,7 @@ const RegisterScreen = ({ navigation }) => {
 
   const handleRegister = async () => {
     if (!username.trim() || !password.trim()) {
+      
       Alert.alert('Erro', 'Por favor, preencha todos os campos');
       return;
     }
@@ -16,22 +17,17 @@ const RegisterScreen = ({ navigation }) => {
     setLoading(true);
     try {
       const response = await registerUser({ username, password });
-      if (response.success) {
-        Alert.alert('Sucesso', 'Cadastro realizado com sucesso!', [
-          { 
-            text: 'OK', 
-            onPress: () => navigation.navigate('MainTabs', {
-              username: response.user?.username || username,
-              screen: 'User' // Redireciona para a aba User após cadastro
-            })
-          }
-        ]);
+      if (response.success) {  
+        navigation.navigate('MainTabs', {
+          username: response.user?.username || username,
+          screen: 'User' // Redireciona para a aba User após cadastro
+        })
       } else {
-        Alert.alert('Erro', response.message || 'Erro ao cadastrar usuário');
+        
       }
     } catch (error) {
       console.error('Registration error:', error);
-      Alert.alert('Erro', 'Ocorreu um erro durante o cadastro');
+
     } finally {
       setLoading(false);
     }
